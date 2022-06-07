@@ -1,0 +1,36 @@
+# 30 chars to fit in github actions UI
+name: 'invalid'
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    tags-ignore:
+      - '**'
+    branches:
+      - 'release-*'
+
+jobs:
+  create-pull-request-to-master:
+    runs-on: ubuntu-latest
+    outputs:
+      pullRequestNumber: ${{ steps.createPullRequest.outputs.result || github.event.number }}
+    steps:
+      - uses: actions/checkout@v2
+      - id: createPullRequest
+        run: echo "::set-output name=result::12345"
+
+
+  migrate-and-update-allow-list-hasura:
+    needs: create-pull-request-to-master
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: echo Pull request number ${{ needs.create-pull-request-to-master.outputs.pullRequestNumber }}!
+
+
+  deploy-api-release:
+    runs-on: ubuntu-latest
+    needs: migrate-and-update-allow-list-hasura
+    steps:
+      - uses: actions/checkout@v2
